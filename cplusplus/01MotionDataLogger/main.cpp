@@ -1,12 +1,31 @@
 #include <iostream>
 
-#include "IEmoStateDLL.h"
-#include "Iedk.h"
-#include "IedkErrorCode.h"
+#include "../../include/IEmoStateDLL.h"
+#include "../../include/Iedk.h"
+#include "../../include/IedkErrorCode.h"
 
+void connectToEmoEngine();
+void logMotionData();
+void disconnectFromEmoEngine();
 
-//g++ main.cpp -I/home/inspirecave/Documents/tallerEmotiv/include/
 int main(int argc, char const *argv[]) {
-  std::cout << "Prueba" << std::endl;
+  connectToEmoEngine();
+  logMotionData();
+  disconnectFromEmoEngine();
   return 0;
+}
+
+//TODO:
+void connectToEmoEngine() {
+
+}
+
+//TODO:
+void logMotionData() {
+
+}
+
+// TODO:
+void disconnectFromEmoEngine() {
+  
 }
