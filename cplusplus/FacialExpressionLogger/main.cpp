@@ -2,7 +2,7 @@
 
 #include <unistd.h>  // Para la funcion usleep(). Solo sirve en UNIX.
 #include <iostream>
-#include <stdexcept> // Para runtime_error
+#include <stdexcept>  // Para runtime_error
 
 #include "../../include/IEmoStateDLL.h"
 #include "../../include/Iedk.h"
@@ -17,7 +17,7 @@ unsigned int userId = 0;
 
 void initializeEmotivEngine();
 void terminateEmotivEngine();
-bool verifyEmotivState();
+bool isThereNewEvent();
 
 void updateCurrentEvent();
 void updateCurrentEventType();
@@ -50,9 +50,8 @@ void initializeEmotivEngine() {
 
 void logFacialExpressionData() {
     logHeader();
-    // todo: change true to a condition.
     while (true) {
-        if (verifyEmotivState()) {
+        if (isThereNewEvent()) {
             updateCurrentEventType();
             // IEE_EmoStateUpdated means that there is new detection
             // results from EmotivEngine.
@@ -66,13 +65,12 @@ void logFacialExpressionData() {
     }
 }
 
-// todo:
 void logHeader() {
     std::cout << "Time, Blink, Wink left, " <<  "Wink right, Eyes Open,"  <<
             " Eyes closed, Surprise, Frown, Smile, Clench\n";
 }
 
-bool verifyEmotivState() {
+bool isThereNewEvent() {
     int state = IEE_EngineGetNextEvent(emotivEngineEvent);
     if (state == EDK_OK) {
         return true;
