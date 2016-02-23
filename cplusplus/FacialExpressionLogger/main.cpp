@@ -2,6 +2,7 @@
 
 #include <unistd.h>  // Para la funcion usleep(). Solo sirve en UNIX.
 #include <iostream>
+#include <stdexcept> // Para runtime_error
 
 #include "../../include/IEmoStateDLL.h"
 #include "../../include/Iedk.h"
