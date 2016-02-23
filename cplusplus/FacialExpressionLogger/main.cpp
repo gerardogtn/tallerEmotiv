@@ -13,11 +13,14 @@ const char * FILE_NAME = "facialExpression.csv";
 EmoEngineEventHandle emotivEngineEvent;
 EmoStateHandle emotivEngineState;
 IEE_Event_t currentEventType;
+unsigned int userId = 0;
 
 void initializeEmotivEngine();
 void terminateEmotivEngine();
 bool verifyEmotivState();
+
 void updateCurrentEvent();
+void updateCurrentEventType();
 
 void logFacialExpressionData();
 void logHeader();
@@ -50,10 +53,11 @@ void logFacialExpressionData() {
     // todo: change true to a condition.
     while (true) {
         if (verifyEmotivState()) {
-            updateCurrentEvent();
+            updateCurrentEventType();
             // IEE_EmoStateUpdated means that there is new detection
             // results from EmotivEngine.
             if (currentEventType == IEE_EmoStateUpdated) {
+                updateCurrentEvent();
                 logCurrentFacialExpressionData();
                 std::cout << "\n";
             }
@@ -79,8 +83,12 @@ bool verifyEmotivState() {
     }
 }
 
-void updateCurrentEvent() {
+void updateCurrentEventType() {
     currentEventType =  IEE_EmoEngineEventGetType(emotivEngineEvent);
+}
+
+void updateCurrentEvent() {
+    IEE_EmoEngineEventGetEmoState(emotivEngineEvent, emotivEngineState);
 }
 
 void logCurrentFacialExpressionData() {
