@@ -15,7 +15,7 @@ IEE_Event_t currentEventType;
 
 void initializeEmotivEngine();
 void terminateEmotivEngine();
-void verifyEmotivState();
+bool verifyEmotivState();
 void updateCurrentEvent();
 
 void logFacialExpressionData();
@@ -48,15 +48,16 @@ void logFacialExpressionData() {
     logHeader();
     // todo: change true to a condition.
     while (true) {
-        verifyEmotivState();
-        updateCurrentEvent();
-        // IEE_EmoStateUpdated means that there is new detection
-        // results from EmotivEngine.
-        if (currentEventType == IEE_EmoStateUpdated) {
-            logCurrentFacialExpressionData();
-            std::cout << "\n";
+        if (verifyEmotivState()) {
+            updateCurrentEvent();
+            // IEE_EmoStateUpdated means that there is new detection
+            // results from EmotivEngine.
+            if (currentEventType == IEE_EmoStateUpdated) {
+                logCurrentFacialExpressionData();
+                std::cout << "\n";
+            }
         }
-        usleep(300000);
+        sleep(1);
     }
 }
 
@@ -66,10 +67,14 @@ void logHeader() {
             " Eyes closed, Surprise, Frown, Smile, Clench\n";
 }
 
-void verifyEmotivState() {
+bool verifyEmotivState() {
     int state = IEE_EngineGetNextEvent(emotivEngineEvent);
-    if (state != EDK_OK) {
-        throw std::runtime_error("The emotiv state is invalid :(");
+    if (state == EDK_OK) {
+        return true;
+    } else if (state == EDK_NO_EVENT) {
+        return false;
+    } else {
+        throw std::runtime_error("Emotiv engine error");
     }
 }
 
@@ -123,7 +128,7 @@ void logUpperFaceExpressionData(IEE_FacialExpressionAlgo_t type, float value) {
 
 void logLowerFaceExpressionData(IEE_FacialExpressionAlgo_t type, float value) {
     if (type == FE_SMILE) {
-        std::cout << value << ", " << 0;
+        std::cout << value << ", 0";
     } else if (type == FE_CLENCH) {
         std::cout << "0, " << value;
     } else {
