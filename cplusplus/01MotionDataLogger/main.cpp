@@ -1,96 +1,75 @@
-#include <iostream> // std::cout, std::cin
-#include <fstream> // std::ofstream
-#include <sstream>
-#include <stdexcept> // runtime error.
-#include <string>
+// Copyright 2016 Gerardo Teruel
+
+#include <unistd.h>  // Para la funcion usleep(). Solo sirve en UNIX.
+#include <iostream>
+#include <stdexcept>  // Para runtime_error
 
 #include "../../include/IEmoStateDLL.h"
 #include "../../include/Iedk.h"
 #include "../../include/IedkErrorCode.h"
 
-void connectToEmoEngine();
+void initializeEmotivEngine();
 void startLoggingMotionData();
 void disconnectFromEmoEngine();
 
 void logHeader();
 void logMotionData();
-void checkForKeyboardHits();
 
-void printLine(std::string);
+IEE_MotionDataChannel_t motionDataChannels[] = {IMD_COUNTER, IMD_GYROX, IMD_GYROY,
+        IMD_GYROZ, IMD_ACCX, IMD_ACCY, IMD_ACCZ, IMD_MAGX, IMD_MAGY, IMD_MAGZ,
+        IMD_TIMESTAMP};
 
-const char * FILE_NAME = "motionData.csv";
-const std::string HEADER = "COUNTER, GYROX, GYROY, GYROZ, ACCX, ACCY, ACCZ, MAGX, MAGY, MAGZ, TIMESTAMP";
-
+const int NUMBER_OF_CHANNELS = 11;
+const char * HEADER = "COUNTER, GYROX, GYROY, GYROZ, ACCX, ACCY, ACCZ, MAGX, MAGY, MAGZ, TIMESTAMP";
 const float SECONDS = 1;
-bool continueLogging = true;
-std::ofstream outputFileStream;
 
-EmoEngineEventHandle emoEngineEvent;
-EmoStateHandle emoState;
+DataHandle motionDataHandle;
 
-// To compile g++ main.cpp -L/home/inspirecave/Documents/tallerEmotiv/bin/linux64/ -ledk
 int main(int argc, char const *argv[]) {
-  std::ofstream outputFileStream(FILE_NAME, std::ofstream::trunc);
-  emoEngineEvent = IEE_EmoEngineEventCreate();
-  emoState = IEE_EmoStateCreate();
-  connectToEmoEngine();
+  initializeEmotivEngine();
   startLoggingMotionData();
   disconnectFromEmoEngine();
-  outputFileStream.close();
   return 0;
 }
 
-void connectToEmoEngine() {
-  if (IEE_EngineConnect() != EDK_OK){
-    throw std::runtime_error("Cannot connect to Emotiv engine");
-  }
+void initializeEmotivEngine() {
+    if (IEE_EngineConnect() != EDK_OK) {
+        throw std::runtime_error("Cannot connect to emotiv engine");
+    }
+    motionDataHandle = IEE_MotionDataCreate();
+    IEE_MotionDataSetBufferSizeInSec(SECONDS);
 }
 
 void startLoggingMotionData() {
-  printLine("Started logging motion data. Press Enter to stop");
   logHeader();
-  while(continueLogging) {
-    printLine("A");
+  while (true) {
     logMotionData();
-    checkForKeyboardHits();
+    sleep(1);
   }
-}
-
-void printLine(std::string line) {
-  std::cout << line << std::endl;
-  std::cout.flush();
 }
 
 void logHeader() {
-  outputFileStream << HEADER << std::endl;
+    std::cout << HEADER << std::endl;
 }
 
 void logMotionData() {
+    IEE_MotionDataUpdateHandle(0, motionDataHandle);
 
+    unsigned int samplesTaken = 0;
+    IEE_MotionDataGetNumberOfSample(motionDataHandle, & samplesTaken);
+
+    for (int i = samplesTaken; i > 0; i--) {
+        for (int j = 0; j < NUMBER_OF_CHANNELS; j++) {
+            double * data = new double[samplesTaken];
+            IEE_MotionDataGet(motionDataHandle, motionDataChannels[j], data, samplesTaken);
+            std::cout << data[i] << ", ";
+            delete[] data;
+        }
+        std::cout << "\n";
+    }
 }
 
-void checkForKeyboardHits() {
-  struct timeval tv;
-  fd_set read_fd;
-  tv.tv_sec=0;
-  tv.tv_usec=0;
-
-  FD_ZERO(&read_fd);
-  FD_SET(0,&read_fd);
-
-  if(select(1, &read_fd,NULL, NULL, &tv) == -1) {
-    continueLogging = true;
-  } else if(FD_ISSET(0,&read_fd)) {
-    continueLogging = false;
-    return;
-  } else {
-    continueLogging = true;
-  }
-}
-
-// TODO:
 void disconnectFromEmoEngine() {
+  IEE_MotionDataFree(motionDataHandle);
   IEE_EngineDisconnect();
-  IEE_EmoStateFree(emoState);
-  IEE_EmoEngineEventFree(emoEngineEvent);
 }
