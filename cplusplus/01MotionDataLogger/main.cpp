@@ -1,6 +1,6 @@
 // Copyright 2016 Gerardo Teruel
 
-#include <unistd.h>  // Para la funcion usleep(). Solo sirve en UNIX.
+#include <unistd.h>  // Para la funcion sleep(). Solo sirve en UNIX.
 #include <iostream>
 #include <stdexcept>  // Para runtime_error
 
