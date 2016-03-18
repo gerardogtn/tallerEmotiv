@@ -38,6 +38,7 @@ En Linux,
         PATH_TO_EDK_LINUX = /usr/home/@user/tallerEmotiv/bin/linux64
 
 En Mac,
+
         PATH_TO_FRAMEWORK = /Library/Frameworks
 
 ### Xcode
