@@ -8,8 +8,6 @@
 #include "../../include/Iedk.h"
 #include "../../include/IedkErrorCode.h"
 
-const char * FILE_NAME = "facialExpression.csv";
-
 EmoEngineEventHandle emotivEngineEvent;
 EmoStateHandle emotivEngineState;
 IEE_Event_t currentEventType;
